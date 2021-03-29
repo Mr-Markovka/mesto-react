@@ -1,18 +1,22 @@
-.cards__like_active {
-    height: 18px;
-    min-width: 20px;
+.cards__btn-remove_visible {
+    height: 19px;
+    width: 18px;
     padding: 0;
-    background-image: url(../../../../images/like-black.svg);
+    top: 18px;
+    right: 15px;
+    border-radius: 0px;
+    background-image: url(../../../.././images/trash.svg);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     border: none;
     background-color: transparent;
-    cursor: pointer; 
+    cursor: pointer;
+    position: absolute;
 }
 
-.cards__like_active:hover {
-    opacity: 0.5;
+.cards__btn-remove_visible:hover {
+    opacity: 0.6;
     transition : all 1s ease;
     -webkit-transition: all 1s ease;
     -o-transition: all 1s ease;

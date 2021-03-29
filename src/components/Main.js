@@ -1,45 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 
 import editButton from '../images/editButton.svg';
 import addButtonVector from '../images/addButtonVector.svg';
-import api from '../utils/api';
 import Card from './Card';
+import {CurrentUserContext} from '../contexts/CurrentUserContext';
 
 function Main(props) {
-    let [userName, setUserName] = useState();
-    let [userDescription, setUserDescription] = useState();
-    let [userAvatar, setUserAvatar] = useState();
-    let [cards, setCards] = useState([]);
- 
-    useEffect(()=>{
-        api.getInfoUser()
-        .then(res=>{
-            setUserName(res.name);
-            setUserDescription(res.about);
-            setUserAvatar(res.avatar);
-        })
-        .catch((err)=>{
-            console.log(err)
-        })
-    }, []);
-
-    useEffect(()=>{
-        api.getInitialCards()
-            .then(data=>{
-                setCards(data);
-            })
-            .catch((err)=>{
-                console.log(err);
-            });
-
-    },[]);
-
+    const currentUser = useContext(CurrentUserContext);
     const onImgClick = (data)=>{
         props.onCardClick(data);
-    }
-    const onBasketClick = (data)=>{
-        props.onDeletedCard(data);
-    }
+        props.onImagePopup();
+    };
+
+    // const onBasketClick = (data)=>{  /*popup delete подтверждения */
+    //     props.onDeletedCardPopup(data);
+    // };
 
   return (
       <>
@@ -47,33 +22,36 @@ function Main(props) {
 
     <section className="profile">
         <a className="profile__avatar-container" target="_self" href="# " onClick={props.onEditAvatar}>
-            <img className="profile__avatar" alt="фото автора." src={`${userAvatar}`} />
+            <img className="profile__avatar" alt="фото автора." src={`${currentUser.avatar}`} />
         </a>
         <div className="profile__info">
             <div className="profile__group">
-                <h1 className="profile__info-name">{`${userName}`}</h1>
+                <h1 className="profile__info-name">{`${currentUser.name}`}</h1>
                 <button className="profile__open-button" type="button" onClick={props.onEditProfile}><img alt="#"
                         src={editButton} /></button>
             </div>
-            <p className="profile__info-about">{`${userDescription}`}</p>
+            <p className="profile__info-about">{`${currentUser.about}`}</p>
         </div>
 
         <button className="profile__add-button" type="button" onClick={props.onAddPlace}><img className="profile__add-button-vector" alt="#"
                 src={addButtonVector} /></button>
     </section>
 
-    
-    <section className="elements">
+        <section className="elements">
         <ul className="cards"> 
-            {cards.map(item=>
+            {props.cards.map(item=>
             <Card
             key={item._id}
+            card={item}
             alt={item.name}
             src={item.link}
             title={item.name}
             likes={item.likes}
+            owner={item.owner}
             onCard={onImgClick}
-            onBasket={onBasketClick}
+            onCardLike={props.onCardLike}
+            onCardDelete={props.onCardDelete}
+            // onBasket={onBasketClick} /*popup delete подтверждения */
             />
             )}
 
@@ -82,7 +60,6 @@ function Main(props) {
 </main>
 
     </>
-
   );
 }
 

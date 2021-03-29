@@ -1,5 +1,5 @@
 .cards__btn-remove {
-    height: 19px;
+    /* height: 19px;
     width: 18px;
     padding: 0;
     top: 18px;
@@ -12,13 +12,16 @@
     border: none;
     background-color: transparent;
     cursor: pointer;
-    position: absolute;
+    position: absolute; */
+
+    border: none;
+    padding: 0;
 }
 
-.cards__btn-remove:hover {
+/* .cards__btn-remove:hover {
     opacity: 0.6;
     transition : all 1s ease;
     -webkit-transition: all 1s ease;
     -o-transition: all 1s ease;
     -moz-transition: all 1s ease;
-}
+} */

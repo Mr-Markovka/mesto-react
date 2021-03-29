@@ -14,4 +14,4 @@ One of the training projects of the Frontend course.<br> Students apply all prev
  The main difference from previous projects was the use of React - a JavaScript library for building user interfaces.<br>
 <br>
 
-Follow the [project](https://mr-markovka.github.io/mesto/index.html)
+<!-- Follow the [project](https://mr-markovka.github.io/mesto/index.html) -->
