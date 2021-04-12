@@ -1,4 +1,7 @@
 import React from "react";
+import { Route, Switch, useHistory } from "react-router-dom";
+import Login from "../components/Login";
+import Register from "../components/Register";
 import Header from "../components/Header";
 import Main from "../components/Main";
 import ImagePopup from "../components/ImagePopup";
@@ -8,6 +11,9 @@ import api from "../utils/api";
 import EditProfilePopup from "../components/EditProfilePopup";
 import EditAvatarPopup from "../components/EditAvatarPopup";
 import AddPlacePopup from "../components/AddPlacePopup";
+import InfoTooltip from "../components/InfoTooltip";
+import ProtectedRoute from "../components/ProtectedRoute";
+import * as auth from "../utils/auth";
 
 function App() {
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(
@@ -17,12 +23,23 @@ function App() {
     false
   );
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
+  const [isInfoToolTipOpen, setIsInfoToolTipOpen] = React.useState(false);
+  const [tooltipStatus, setTooltipStatus] = React.useState("");
   const [isImagePopupOpen, setIsImagePopupOpen] = React.useState(false);
   const [selectedCard, setSelectedCard] = React.useState(false);
   // const [isDeletedCardPopupOpen, setIsDeletedCardPopupOpen] = React.useState(false); /*popup delete подтверждения */
 
   const [currentUser, setCurrentUser] = React.useState("");
+  const [userEmail, setUserEmail] = React.useState("");
   const [cards, setCards] = React.useState([]);
+
+  const [loggedIn, setLoggedIn] = React.useState(false);
+
+  const [userData, setUserData] = React.useState({
+    email: "",
+    password: "",
+  });
+  const history = useHistory();
 
   React.useEffect(() => {
     api
@@ -45,6 +62,66 @@ function App() {
         console.log(err);
       });
   }, []);
+
+  React.useEffect(() => {
+    tokenCheck();
+  }, []);
+
+  React.useEffect(() => {
+    if (loggedIn) {
+      history.push("/");
+    }
+  }, [history, loggedIn]);
+
+  const handleLogin = ({ email, password }) => {
+    return auth.authorize(email, password).then((data) => {
+      if (!data) throw new Error("Что-то пошло не так!");
+      if (data.token) {
+        setLoggedIn(true);
+        localStorage.setItem("jwt", data.token);
+        history.push("/");
+        setUserEmail(data.data.email);
+        return;
+      }
+    });
+  };
+
+  const handleLogout = () => {
+    history.push("/signin");
+    setLoggedIn(true);
+    localStorage.removeItem("jwt");
+  };
+
+  const handleRegister = ({ email, password }) => {
+    return auth
+      .register(email, password)
+      .then((res) => {
+        if (res.data._id) {
+          setTooltipStatus("success");
+          setIsInfoToolTipOpen(true);
+          history.push("/signin");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        setTooltipStatus("fail");
+        setIsInfoToolTipOpen(true);
+      });
+  };
+
+  function tokenCheck() {
+    if (localStorage.getItem("jwt")) {
+      let jwt = localStorage.getItem("jwt");
+      auth.getContent(jwt).then((data) => {
+        if (data.data.email) {
+          setLoggedIn(true);
+          setUserData({ email: data.email, password: data.password });
+          history.push("/");
+          setUserEmail(data.data.email);
+        }
+      });
+    }
+  }
 
   function handleCardLike(card) {
     const isLiked = card.likes.some((i) => i._id === currentUser._id);
@@ -137,25 +214,44 @@ function App() {
     setIsEditProfilePopupOpen(false);
     setIsAddPlacePopupOpen(false);
     setIsImagePopupOpen(false);
+    setIsInfoToolTipOpen(false);
     // setIsDeletedCardPopupOpen(false); /*popup delete подтверждения */
   }
 
   return (
-    <CurrentUserContext.Provider value={currentUser}>
-      <div className="page root">
-        <Header />
-        <Main
-          onEditAvatar={handleEditAvatarClick}
-          onEditProfile={handleEditProfileClick}
-          onAddPlace={handleAddPlaceClick}
-          onImagePopup={handleImagePopupClick}
-          onCardClick={handleCardClick}
-          cards={cards}
-          onCardLike={handleCardLike}
-          onCardDelete={handleCardDelete}
-          // onDeletedCardPopup={handleDeleteCardPopupClick}  /*popup delete подтверждения */
-        />
-        <Footer />
+    <div className="page root">
+      <CurrentUserContext.Provider value={currentUser}>
+        <Header onLogout={handleLogout} userEmail={userEmail} />
+
+        <Switch>
+          <ProtectedRoute
+            exact
+            path="/"
+            loggedIn={loggedIn}
+            component={Main}
+            onEditAvatar={handleEditAvatarClick}
+            onEditProfile={handleEditProfileClick}
+            onAddPlace={handleAddPlaceClick}
+            onImagePopup={handleImagePopupClick}
+            onCardClick={handleCardClick}
+            cards={cards}
+            onCardLike={handleCardLike}
+            onCardDelete={handleCardDelete}
+          />
+
+          <Route path="/signin">
+            <div className="loginContainer">
+              <Login onLogin={handleLogin} />
+            </div>
+          </Route>
+
+          <Route path="/signup">
+            <div className="registerContainer">
+              <Register onRegister={handleRegister} />
+            </div>
+          </Route>
+        </Switch>
+
         <EditProfilePopup
           isOpen={isEditProfilePopupOpen}
           onClose={closeAllPopups}
@@ -177,14 +273,21 @@ function App() {
         {/*popup delete подтверждения */}
         {/* <PopupWithForm isOpen={isDeletedCardPopupOpen} onClick={handleDeleteCardPopupClick} onClose={closeAllPopups} name="confirm" title="Вы уверены?" submit="Да"/> */}
 
+        <InfoTooltip
+          isOpen={isInfoToolTipOpen}
+          onClose={closeAllPopups}
+          status={tooltipStatus}
+        />
         <ImagePopup
           isOpen={isImagePopupOpen}
           onClick={handleImagePopupClick}
           card={selectedCard}
           onClose={closeAllPopups}
         />
-      </div>
-    </CurrentUserContext.Provider>
+
+        <Footer />
+      </CurrentUserContext.Provider>
+    </div>
   );
 }
 

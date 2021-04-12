@@ -1,0 +1,21 @@
+.signRoute__header {
+  width: 358px;
+  color: #fff;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 29px;
+  letter-spacing: 0em;
+  text-align: center;
+  margin: 60px auto 50px auto;
+}
+
+/* @media screen and (max-width: 540px) {
+    .signRoute__header {
+        width: 238px;
+        font-size: 17px;
+        line-height: 22px;
+        text-align: center;
+        margin: 25px auto 75px auto;
+    }
+} */
